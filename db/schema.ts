@@ -50,3 +50,7 @@ export const listingViews = sqliteTable('listing_views', {
 export const profileViews = sqliteTable('profile_views', {
   id:text('id').primaryKey(), profileUserId:text('profile_user_id').notNull(), viewerUserId:text('viewer_user_id'), viewedAt:integer('viewed_at').notNull(),
 },(t)=>[index('idx_profile_views_profile').on(t.profileUserId)]);
+
+export const listingMessages = sqliteTable('listing_messages', {
+  id:text('id').primaryKey(), openingId:text('opening_id').notNull(), userId:text('user_id').notNull(), displayName:text('display_name').notNull(), body:text('body').notNull(), createdAt:integer('created_at').notNull(),
+},(t)=>[index('idx_listing_messages_opening_created').on(t.openingId,t.createdAt)]);
