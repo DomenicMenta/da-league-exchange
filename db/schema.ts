@@ -1,4 +1,4 @@
-import { integer, primaryKey, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
+import { index, integer, primaryKey, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core';
 
 export const users = sqliteTable('users', {
   id: text('id').primaryKey(),
@@ -42,3 +42,11 @@ export const trackedTeams = sqliteTable('tracked_teams', {
   id: text('id').primaryKey(), userId: text('user_id').notNull(), sleeperLeagueId: text('sleeper_league_id'), leagueName: text('league_name').notNull(),
   teamName: text('team_name').notNull(), format: text('format').notNull(), record: text('record').notNull().default(''), createdAt: integer('created_at').notNull(),
 });
+
+export const listingViews = sqliteTable('listing_views', {
+  id:text('id').primaryKey(), openingId:text('opening_id').notNull(), viewerUserId:text('viewer_user_id'), viewedAt:integer('viewed_at').notNull(),
+},(t)=>[index('idx_listing_views_opening').on(t.openingId)]);
+
+export const profileViews = sqliteTable('profile_views', {
+  id:text('id').primaryKey(), profileUserId:text('profile_user_id').notNull(), viewerUserId:text('viewer_user_id'), viewedAt:integer('viewed_at').notNull(),
+},(t)=>[index('idx_profile_views_profile').on(t.profileUserId)]);
