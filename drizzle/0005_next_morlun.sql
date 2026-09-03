@@ -1,0 +1,1 @@
+ALTER TABLE `leagues` ADD `usual_entry_fee_cents` integer;

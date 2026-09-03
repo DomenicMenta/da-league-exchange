@@ -15,7 +15,8 @@ export const leagues = sqliteTable('leagues', {
   id: text('id').primaryKey(), ownerUserId: text('owner_user_id').notNull(),
   sleeperLeagueId: text('sleeper_league_id'), name: text('name').notNull(), season: integer('season').notNull(),
   format: text('format').notNull(), teamCount: integer('team_count').notNull(), scoring: text('scoring').notNull(),
-  entryFeeCents: integer('entry_fee_cents').notNull(), duesStatus: text('dues_status').notNull().default('unknown'),
+  entryFeeCents: integer('entry_fee_cents').notNull(), usualEntryFeeCents: integer('usual_entry_fee_cents'),
+  duesStatus: text('dues_status').notNull().default('unknown'),
   bylawsUrl: text('bylaws_url'), bylawsText: text('bylaws_text').notNull().default(''), description: text('description').notNull().default(''),
   createdAt: integer('created_at').notNull(), updatedAt: integer('updated_at').notNull(),
 }, (t) => [uniqueIndex('leagues_sleeper_id_uq').on(t.sleeperLeagueId)]);
