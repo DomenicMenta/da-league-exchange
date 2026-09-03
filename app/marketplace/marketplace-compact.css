@@ -14,6 +14,7 @@
   transform: translateY(0);
   transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
+.roster-card.clickable{cursor:pointer}.roster-card.clickable:focus-visible{outline:3px solid #d98a3d;outline-offset:4px}
 .roster-card::before { content:""; position:absolute; inset:0; pointer-events:none; box-shadow:inset 0 1px 0 #ffffff12; }
 .roster-card:hover { transform:translateY(-3px); border-color:#8a6736; box-shadow:0 5px 0 #d17a2d,0 18px 30px #21180c4d,0 30px 60px #21180c26; }
 .roster-card > header { padding: 14px 15px 12px; }

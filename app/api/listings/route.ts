@@ -9,21 +9,27 @@ type PublishBody={
   lineup:Array<{pos:string;name:string;team:string;sleeperId?:string}>;
 };
 
-export async function GET(){
-  const rows=await env.DB.prepare(`SELECT o.id,o.title,o.roster_summary rosterSummary,l.name league,
+export async function GET(request:NextRequest){
+  const id=request.nextUrl.searchParams.get('id');
+  const statement=env.DB.prepare(`SELECT o.id,o.title,o.roster_summary rosterSummary,l.name league,
     l.format,l.scoring,l.entry_fee_cents buyIn,l.usual_entry_fee_cents usualBuyIn,u.display_name commissioner,
+    l.team_count teamCount,l.season,l.description,l.bylaws_url bylawsUrl,l.bylaws_text bylawsText,o.draft_capital draftCapital,
     (SELECT COUNT(*) FROM listing_messages m WHERE m.opening_id=o.id) chat
     FROM openings o JOIN leagues l ON l.id=o.league_id JOIN users u ON u.id=l.owner_user_id
-    WHERE o.status='open' ORDER BY o.created_at DESC`).all<Record<string,unknown>>();
+    WHERE o.status='open' ${id?'AND o.id=?':''} ORDER BY o.created_at DESC`);
+  const rows=await (id?statement.bind(id):statement).all<Record<string,unknown>>();
   const listings=rows.results.map(row=>{
     let summary:{lineup?:unknown[];type?:string;ppr?:string;tep?:string;verified?:boolean}={};
     try{summary=JSON.parse(String(row.rosterSummary||'{}'))}catch{}
     return {id:row.id,league:row.league,commissioner:row.commissioner,format:row.format,
       ppr:summary.ppr||row.scoring,tep:summary.tep||'No TEP',type:summary.type||'Dynasty',
       buyIn:Number(row.buyIn||0)/100,usual:Number(row.usualBuyIn||row.buyIn||0)/100,
-      lineup:Array.isArray(summary.lineup)?summary.lineup:[],chat:Number(row.chat||0),verified:Boolean(summary.verified)};
+      lineup:Array.isArray(summary.lineup)?summary.lineup:[],chat:Number(row.chat||0),verified:Boolean(summary.verified),
+      title:row.title,teamCount:Number(row.teamCount||0),season:Number(row.season||0),description:row.description,
+      bylawsUrl:row.bylawsUrl,bylawsText:row.bylawsText,draftCapital:row.draftCapital};
   });
-  return NextResponse.json({listings});
+  if(id&&!listings[0])return NextResponse.json({error:'Listing not found.'},{status:404});
+  return NextResponse.json(id?{listing:listings[0]}:{listings});
 }
 
 export async function POST(request:NextRequest){
