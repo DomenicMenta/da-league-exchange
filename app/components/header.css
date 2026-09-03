@@ -1,0 +1,2 @@
+.app-header .product-brand{gap:15px}.app-header .product-brand img{width:55px;height:55px;transform:scale(1.28)}.app-header .product-brand strong{font-size:13px;white-space:nowrap}.app-header .product-brand span{font-size:11px;line-height:1.15}
+@media(max-width:560px){.app-header .product-brand{gap:10px}.app-header .product-brand img{width:46px;height:46px;transform:scale(1.24)}.app-header .product-brand strong{font-size:10px}.app-header .product-brand span{font-size:9px}}
