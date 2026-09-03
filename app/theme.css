@@ -1,0 +1,9 @@
+:root{
+  --ink:#090a08;
+  --paper:#f6efdf;
+  --orange:#c45f18;
+  --gold:#e1ad58;
+  --green:#78a87a;
+  --line:#d8c9af;
+}
+body,.app-page{background:#f6efdf}.site-header,.app-header,.table-wrap,.detail-block,.profile-grid>section,.profile-grid>aside,.dash-grid>section,.apply-card,.dash-metrics{background:#fbf5e9}.ticker,.app-ticker,.how,.market-card,.watch-card{background:#090a08}.primary,.post-link{background:linear-gradient(135deg,#d87922 0%,#ad430d 100%);border-color:#bd5214}.site-header nav a.active:after,.rail-steps div.current,.app-header nav a.active{border-color:#c45f18}.market-card{box-shadow:12px 12px 0 #e1ad58}.market-label,.kicker,.load-more span,.panel-title a,.bylaws,.watch-card button,.team-select em{color:#b95113}.verified,.step-label{color:#f0c878}.verified{border-color:#a77a36}.shield{background:#141510}.avatar-stack b:first-child,.mini-avatars b{background:#b4531c}.input-toggle button.active{background:#090a08;border-color:#090a08}.help-box,.rail-note,.detail-tags i{background:#eee1ca}.search,.filters button,.filters select,.import-form input,.detail-form input,.detail-form textarea,.apply-card textarea{background:#fffaf0}
