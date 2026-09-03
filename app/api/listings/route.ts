@@ -15,6 +15,7 @@ export async function GET(request:NextRequest){
   const statement=env.DB.prepare(`SELECT o.id,o.title,o.roster_summary rosterSummary,l.name league,
     l.format,l.scoring,l.entry_fee_cents buyIn,l.usual_entry_fee_cents usualBuyIn,u.display_name commissioner,
     l.team_count teamCount,l.season,l.description,l.bylaws_url bylawsUrl,l.bylaws_text bylawsText,o.draft_capital draftCapital,
+    l.sleeper_league_id sleeperLeagueId,o.roster_id rosterId,
     (SELECT COUNT(*) FROM listing_messages m WHERE m.opening_id=o.id) chat
     FROM openings o JOIN leagues l ON l.id=o.league_id JOIN users u ON u.id=l.owner_user_id
     WHERE o.status='open' ${id?'AND o.id=?':''} ORDER BY o.created_at DESC`);
@@ -27,9 +28,12 @@ export async function GET(request:NextRequest){
       buyIn:Number(row.buyIn||0)/100,usual:Number(row.usualBuyIn||row.buyIn||0)/100,
       lineup:Array.isArray(summary.lineup)?summary.lineup:[],roster:Array.isArray(summary.roster)?summary.roster:summary.lineup||[],chat:Number(row.chat||0),verified:Boolean(summary.verified),
       title:row.title,teamCount:Number(row.teamCount||0),season:Number(row.season||0),description:row.description,
-      bylawsUrl:row.bylawsUrl,bylawsText:row.bylawsText,draftCapital:row.draftCapital};
+      bylawsUrl:row.bylawsUrl,bylawsText:row.bylawsText,draftCapital:row.draftCapital,sleeperLeagueId:row.sleeperLeagueId,rosterId:Number(row.rosterId||0)};
   });
   if(id&&!listings[0])return NextResponse.json({error:'Listing not found.'},{status:404});
+  if(id&&listings[0]&&listings[0].sleeperLeagueId&&listings[0].rosterId&&listings[0].roster.length<=listings[0].lineup.length){
+    try{const leagueId=String(listings[0].sleeperLeagueId),[rostersRes,playersRes]=await Promise.all([fetch(`https://api.sleeper.app/v1/league/${leagueId}/rosters`,{next:{revalidate:300}}),fetch('https://api.sleeper.app/v1/players/nfl',{next:{revalidate:86400}})]);if(rostersRes.ok&&playersRes.ok){const rosters=await rostersRes.json() as Array<{roster_id:number;players?:string[];starters?:string[]}>,players=await playersRes.json() as Record<string,{full_name?:string;position?:string;team?:string}>,roster=rosters.find(item=>item.roster_id===listings[0].rosterId),starters=new Set((roster?.starters||[]).filter(Boolean));if(roster?.players?.length)listings[0].roster=roster.players.map(sleeperId=>({sleeperId,name:players[sleeperId]?.full_name||`Player ${sleeperId}`,pos:players[sleeperId]?.position||'FLEX',team:players[sleeperId]?.team||'FA',starter:starters.has(sleeperId)}))}}catch{}
+  }
   return NextResponse.json(id?{listing:listings[0]}:{listings});
 }
 
