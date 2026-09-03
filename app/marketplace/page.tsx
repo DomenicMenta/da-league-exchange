@@ -1,3 +1,3 @@
-import AppHeader from '../components/AppHeader';import MarketplaceClient from './MarketplaceClient';import './marketplace.css';
+import AppHeader from '../components/AppHeader';import MarketplaceClient from './MarketplaceClient';import './marketplace.css';import './marketplace-compact.css';
 export const metadata={title:'Dynasty Team Marketplace | DA League Exchange',description:'Browse complete dynasty rosters, league settings, pricing, bylaws, and commissioner details.'};
 export default function Marketplace(){return <main className="app-page market-page"><AppHeader active="market"/><section className="exchange-head"><div><span className="kicker">THE OPEN MARKET</span><h1>Dynasty teams<br/>ready for a new owner.</h1></div><p>Compare the facts that matter. Every listing includes the league format, complete starting lineup, commissioner, dues, and bylaws.</p></section><MarketplaceClient/></main>}

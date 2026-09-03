@@ -1,0 +1,63 @@
+/* Dense marketplace cards: optimized for fast roster scanning. */
+.listing-grid {
+  margin-top: 16px;
+  margin-bottom: 70px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  align-items: start;
+}
+
+.roster-card { box-shadow: 0 8px 20px #19150e14; }
+.roster-card > header { padding: 14px 15px 12px; }
+.listing-code { font-size: 6px; }
+.roster-card h2 {
+  margin: 5px 0 3px;
+  font-size: 18px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.roster-card header p { font-size: 8px; }
+.roster-card > header button { width: 27px; height: 27px; }
+.format-strip { padding-inline: 14px; overflow: hidden; }
+.format-strip > * { padding: 7px 8px; font-size: 6px; white-space: nowrap; }
+.starting-lineup { padding: 11px 15px; }
+.lineup-title, .starter { grid-template-columns: 37px 30px minmax(0, 1fr) 30px; }
+.lineup-title { grid-template-columns: 1fr auto; padding-bottom: 6px; font-size: 6px; }
+.starter { min-height: 30px; }
+.pos { font-size: 7px; }
+.player-face {
+  position: relative;
+  width: 25px;
+  height: 25px;
+  overflow: hidden;
+  font-size: 6px;
+}
+.player-face img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 12%;
+  background: #292a25;
+}
+.starter b { font-size: 9px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.starter small { font-size: 6px; }
+.roster-card > footer { grid-template-columns: 90px 1fr; }
+.roster-card > footer > div:first-child { padding: 10px 14px; }
+.roster-card footer span { font-size: 6px; }
+.roster-card footer b { margin-top: 2px; font-size: 19px; }
+.roster-card footer small { font-size: 7px; }
+.card-actions { gap: 6px; padding: 9px; }
+.card-actions button, .card-actions a { gap: 5px; font-size: 8px; }
+
+@media (max-width: 1000px) {
+  .listing-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 680px) {
+  .listing-grid { grid-template-columns: 1fr; }
+  .roster-card > footer { grid-template-columns: 90px 1fr; }
+  .card-actions { min-height: 52px; }
+}
