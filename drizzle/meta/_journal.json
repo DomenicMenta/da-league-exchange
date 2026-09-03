@@ -43,6 +43,13 @@
       "when": 1788474867445,
       "tag": "0005_next_morlun",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1788476967146,
+      "tag": "0006_chilly_la_nuit",
+      "breakpoints": true
     }
   ]
 }
