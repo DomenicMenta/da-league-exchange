@@ -7,6 +7,7 @@ type PublishBody={
   rosterId:number;title:string;format:string;scoring:string;buyIn:number;usualBuyIn:number;
   bylawsMode:'url'|'text';bylaws:string;description:string;draftCapital:string;
   lineup:Array<{pos:string;name:string;team:string;sleeperId?:string}>;
+  roster:Array<{pos:string;name:string;team:string;sleeperId?:string;starter?:boolean}>;
 };
 
 export async function GET(request:NextRequest){
@@ -19,12 +20,12 @@ export async function GET(request:NextRequest){
     WHERE o.status='open' ${id?'AND o.id=?':''} ORDER BY o.created_at DESC`);
   const rows=await (id?statement.bind(id):statement).all<Record<string,unknown>>();
   const listings=rows.results.map(row=>{
-    let summary:{lineup?:unknown[];type?:string;ppr?:string;tep?:string;verified?:boolean}={};
+    let summary:{lineup?:unknown[];roster?:unknown[];type?:string;ppr?:string;tep?:string;verified?:boolean}={};
     try{summary=JSON.parse(String(row.rosterSummary||'{}'))}catch{}
     return {id:row.id,league:row.league,commissioner:row.commissioner,format:row.format,
       ppr:summary.ppr||row.scoring,tep:summary.tep||'No TEP',type:summary.type||'Dynasty',
       buyIn:Number(row.buyIn||0)/100,usual:Number(row.usualBuyIn||row.buyIn||0)/100,
-      lineup:Array.isArray(summary.lineup)?summary.lineup:[],chat:Number(row.chat||0),verified:Boolean(summary.verified),
+      lineup:Array.isArray(summary.lineup)?summary.lineup:[],roster:Array.isArray(summary.roster)?summary.roster:summary.lineup||[],chat:Number(row.chat||0),verified:Boolean(summary.verified),
       title:row.title,teamCount:Number(row.teamCount||0),season:Number(row.season||0),description:row.description,
       bylawsUrl:row.bylawsUrl,bylawsText:row.bylawsText,draftCapital:row.draftCapital};
   });
@@ -41,7 +42,7 @@ export async function POST(request:NextRequest){
   const now=Date.now(),leagueId=`sleeper:${body.sleeperLeagueId}`,openingId=`LX-${crypto.randomUUID().slice(0,8).toUpperCase()}`;
   const ppr=/0\.5/.test(body.scoring)?'0.5 PPR':/PPR|1/.test(body.scoring)?'1.0 PPR':'Standard';
   const tepMatch=body.scoring.match(/(?:TEP|TE premium)\s*([0-9.]+)/i);
-  const summary=JSON.stringify({lineup:body.lineup||[],type:'Dynasty',ppr,tep:tepMatch?`${tepMatch[1]} TEP`:'No TEP',verified:true});
+  const summary=JSON.stringify({lineup:body.lineup||[],roster:body.roster||body.lineup||[],type:'Dynasty',ppr,tep:tepMatch?`${tepMatch[1]} TEP`:'No TEP',verified:true});
   const handle=(user.email.split('@')[0].replace(/[^a-z0-9_]/gi,'').slice(0,24)||'manager')+'_'+user.userId.slice(-5);
   await env.DB.batch([
     env.DB.prepare("INSERT INTO users(id,email,display_name,handle,bio,role,created_at) VALUES(?,?,?,?,?,'manager',?) ON CONFLICT(id) DO UPDATE SET email=excluded.email,display_name=excluded.display_name")
