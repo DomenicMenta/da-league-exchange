@@ -7,7 +7,15 @@
   align-items: start;
 }
 
-.roster-card { box-shadow: 0 8px 20px #19150e14; }
+.roster-card {
+  position: relative;
+  border-color: #56472f;
+  box-shadow: 0 3px 0 #c06a25, 0 13px 24px #21180c38, 0 24px 50px #21180c1c;
+  transform: translateY(0);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.roster-card::before { content:""; position:absolute; inset:0; pointer-events:none; box-shadow:inset 0 1px 0 #ffffff12; }
+.roster-card:hover { transform:translateY(-3px); border-color:#8a6736; box-shadow:0 5px 0 #d17a2d,0 18px 30px #21180c4d,0 30px 60px #21180c26; }
 .roster-card > header { padding: 14px 15px 12px; }
 .listing-code { font-size: 6px; }
 .roster-card h2 {

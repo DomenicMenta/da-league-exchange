@@ -54,3 +54,10 @@ export const profileViews = sqliteTable('profile_views', {
 export const listingMessages = sqliteTable('listing_messages', {
   id:text('id').primaryKey(), openingId:text('opening_id').notNull(), userId:text('user_id').notNull(), displayName:text('display_name').notNull(), body:text('body').notNull(), createdAt:integer('created_at').notNull(),
 },(t)=>[index('idx_listing_messages_opening_created').on(t.openingId,t.createdAt)]);
+
+export const authSessions = sqliteTable('auth_sessions', {
+  tokenHash: text('token_hash').primaryKey(),
+  userId: text('user_id').notNull(),
+  createdAt: integer('created_at').notNull(),
+  expiresAt: integer('expires_at').notNull(),
+}, (t) => [index('idx_auth_sessions_user').on(t.userId), index('idx_auth_sessions_expiry').on(t.expiresAt)]);
