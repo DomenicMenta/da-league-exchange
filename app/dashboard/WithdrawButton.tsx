@@ -1,0 +1,3 @@
+'use client';
+import {MouseEvent,useState} from 'react';
+export default function WithdrawButton({id}:{id:string}){const [busy,setBusy]=useState(false);async function withdraw(e:MouseEvent<HTMLButtonElement>){e.preventDefault();e.stopPropagation();if(!confirm('Withdraw this application? The commissioner will no longer see it.'))return;setBusy(true);const r=await fetch('/api/applications',{method:'DELETE',headers:{'content-type':'application/json'},body:JSON.stringify({applicationId:id})});if(r.ok)location.reload();else{const x=await r.json().catch(()=>({}));alert(x.error||'Could not withdraw application.');setBusy(false)}}return <button type="button" className="withdraw-application" disabled={busy} onClick={withdraw}>{busy?'Withdrawing…':'Withdraw'}</button>}

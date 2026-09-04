@@ -50,6 +50,13 @@
       "when": 1788476967146,
       "tag": "0006_chilly_la_nuit",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1788494632563,
+      "tag": "0007_red_edwin_jarvis",
+      "breakpoints": true
     }
   ]
 }

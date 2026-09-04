@@ -36,6 +36,11 @@ export const applications = sqliteTable('applications', {
   createdAt: integer('created_at').notNull(), updatedAt: integer('updated_at').notNull(),
 }, (t) => [uniqueIndex('applications_opening_user_uq').on(t.openingId,t.applicantUserId)]);
 
+export const applicationMessages = sqliteTable('application_messages', {
+  id:text('id').primaryKey(), applicationId:text('application_id').notNull(), senderUserId:text('sender_user_id').notNull(),
+  body:text('body').notNull(), createdAt:integer('created_at').notNull(),
+},(t)=>[index('idx_application_messages_application_created').on(t.applicationId,t.createdAt)]);
+
 export const savedOpenings = sqliteTable('saved_openings', {
   userId: text('user_id').notNull(), openingId: text('opening_id').notNull(), createdAt: integer('created_at').notNull(),
 }, (t) => [primaryKey({columns:[t.userId,t.openingId]})]);

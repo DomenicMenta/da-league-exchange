@@ -1,11 +1,151 @@
-import type {AnchorHTMLAttributes} from 'react';import AppHeader from '../components/AppHeader';import {requireChatGPTUser} from '../chatgpt-auth';import {loadDashboard} from '../lib/market-db';import './dashboard.css';
+import type {AnchorHTMLAttributes} from 'react';import AppHeader from '../components/AppHeader';import WithdrawButton from './WithdrawButton';import {requireChatGPTUser} from '../chatgpt-auth';import {loadDashboard} from '../lib/market-db';import './dashboard.css';
 export const dynamic='force-dynamic';
-export default async function Dashboard({searchParams}:{searchParams:Promise<{tab?:string;published?:string}>}){const user=await requireChatGPTUser('/dashboard'),data=await loadDashboard(user),params=await searchParams,tab=params.tab||'overview',name=user.fullName?.split(' ')[0]||user.displayName.split('@')[0];const appStatus=(s:string)=>s==='accepted'?'Accepted':s==='shortlisted'?'Shortlisted':s==='declined'?'Closed':'Commissioner reviewing';return <main className="app-page"><AppHeader active="dashboard"/><div className="dashboard-shell"><aside className="side-nav"><div className="profile-mini"><b>{name.slice(0,2).toUpperCase()}</b><span><strong>{name}</strong><small>Dynasty manager</small></span></div><nav>{[['overview','Overview'],['teams','Posted teams'],['applications','Applications'],['watchlist','Watchlist']].map(([key,label])=><Link key={key} className={tab===key?'active':''} href={`/dashboard?tab=${key}`}>{label}<i>{key==='teams'?data.listings.length:key==='applications'?data.applications.length:key==='watchlist'?data.watchlist.length:''}</i></Link>)}</nav><Link href="/profile">Edit profile →</Link></aside><section className="dashboard-main">{params.published&&<div className="publish-success">✓ Your team is live on the Exchange. <Link href={`/league/${params.published}`}>View listing →</Link></div>}<div className="dash-title"><div><span className="kicker">MANAGER DESK</span><h1>{tab==='overview'?`Good morning, ${name}.`:tab==='teams'?'Your posted teams':tab==='applications'?'Submitted applications':'Your watchlist'}</h1><p>{tab==='overview'?"Here's what moved since your last visit.":'Live account data from your Exchange activity.'}</p></div><Link className="primary" href="/list">List a team ↗</Link></div>
-{tab==='overview'&&<><div className="dash-metrics"><article><span>POSTED TEAMS</span><b>{data.listings.length}</b><small>{data.listings.reduce((n,x)=>n+x.applications,0)} total applications</small></article><article><span>OPEN APPLICATIONS</span><b>{data.applications.filter(x=>!['accepted','declined'].includes(x.status)).length}</b><small>Track every status</small></article><article><span>WATCHLIST</span><b>{data.watchlist.length}</b><small>Saved franchises</small></article><article><span>PROFILE VIEWS</span><b>{data.profileViews}</b><small>All-time verified views</small></article></div><div className="dash-grid"><section><div className="panel-title"><h2>Your applications</h2><Link href="/dashboard?tab=applications">View all →</Link></div><Rows items={data.applications.slice(0,3).map(x=>({id:x.id,title:x.title,league:x.league,meta:appStatus(x.status)}))} empty="You haven't applied for a team yet."/></section><section><div className="panel-title"><h2>Market watch</h2><Link href="/dashboard?tab=watchlist">View all →</Link></div>{data.watchlist[0]?<div className="watch-card"><span className="kicker">WATCHING</span><h3>{data.watchlist[0].title}</h3><p>{data.watchlist[0].league}</p><div><b>${Math.round(data.watchlist[0].price/100)}</b><small>per season</small></div><Link href={`/league/${data.watchlist[0].id}`}>View franchise →</Link></div>:<div className="dash-empty">Save teams from the market to track price changes here.</div>}</section></div></>}
-{tab==='teams'&&<><div className="account-table"><div className="account-head"><span>TEAM</span><span>STATUS</span><span>APPLICATIONS</span><span>VIEWS</span></div>{data.listings.map(x=><Link href={`/league/${x.id}`} key={x.id}><span><strong>{x.title}</strong><small>{x.league} · ${Math.round(x.price/100)}</small></span><em>{x.status}</em><b>{x.applications}</b><b>{x.views}</b></Link>)}{!data.listings.length&&<Empty title="No teams posted yet" body="Import a Sleeper league and put your first opening on the market." href="/list" action="Post a team"/>}</div>{data.incoming.length>0&&<section className="incoming-apps"><div className="panel-title"><h2>Applicant profiles</h2><span>{data.incoming.length} TO REVIEW</span></div>{data.incoming.map(x=><article key={x.id}><b className="shield">{x.name.slice(0,2).toUpperCase()}</b><div><strong>{x.name}</strong><small>@{x.handle} · Applied for {x.title}</small><p>{x.bio||'Exchange manager profile'}{x.sleeperUsername&&` · Sleeper: ${x.sleeperUsername}`}</p>{x.message&&<blockquote>“{x.message}”</blockquote>}</div><em>{appStatus(x.status)}</em></article>)}</section>}</>}
-{tab==='applications'&&<div className="account-table"><div className="account-head"><span>TEAM</span><span>STATUS</span><span>UPDATED</span><span></span></div>{data.applications.map(x=><Link href={`/league/${x.id}`} key={x.id}><span><strong>{x.title}</strong><small>{x.league}</small></span><em>{appStatus(x.status)}</em><b>{new Date(x.updated).toLocaleDateString()}</b><b>→</b></Link>)}{!data.applications.length&&<Empty title="No applications submitted" body="Explore the market and apply when you find the right league." href="/marketplace" action="Browse teams"/>}</div>}
-{tab==='watchlist'&&<div className="account-table"><div className="account-head"><span>TEAM</span><span>PRICE</span><span>CHANGE</span><span>STATUS</span></div>{data.watchlist.map(x=><Link href={`/league/${x.id}`} key={x.id}><span><strong>{x.title}</strong><small>{x.league}</small></span><b>${Math.round(x.price/100)}</b><em>{x.previousPrice&&x.previousPrice>x.price?`↓ $${Math.round((x.previousPrice-x.price)/100)}`:'No change'}</em><b>{x.status}</b></Link>)}{!data.watchlist.length&&<Empty title="Your watchlist is empty" body="Save interesting franchises to monitor price drops and availability." href="/marketplace" action="Open the market"/>}</div>}
-</section></div></main>}
-function Rows({items,empty}:{items:Array<{id:string;title:string;league:string;meta:string}>;empty:string}){return <div className="application-list">{items.map(x=><article key={x.id}><span className="shield">{x.title.slice(0,2)}</span><span><strong>{x.title}</strong><small>{x.league}</small></span><em>{x.meta}</em></article>)}{!items.length&&<div className="dash-empty">{empty}</div>}</div>}
-function Empty({title,body,href,action}:{title:string;body:string;href:string;action:string}){return <div className="account-empty"><b>{title}</b><p>{body}</p><Link href={href}>{action} →</Link></div>}
+export default async function Dashboard({searchParams}:{searchParams:Promise<{tab?:string;published?:string}>}){const user=await requireChatGPTUser('/dashboard'),data=await loadDashboard(user),params=await searchParams,tab=params.tab||'overview',name=user.fullName?.split(' ')[0]||user.displayName.split('@')[0];const appStatus=(s:string)=>s==='accepted'?'Accepted':s==='shortlisted'?'Shortlisted':s==='declined'?'Closed':'Commissioner reviewing';return <main className="app-page">
+<AppHeader active="dashboard"/>
+<div className="dashboard-shell">
+<aside className="side-nav">
+<div className="profile-mini">
+<b>{name.slice(0,2).toUpperCase()}</b>
+<span>
+<strong>{name}</strong>
+<small>Dynasty manager</small>
+</span>
+</div>
+<nav>{[['overview','Overview'],['teams','Posted teams'],['applications','Applications'],['watchlist','Watchlist']].map(([key,label])=>
+<Link key={key} className={tab===key?'active':''} href={`/dashboard?tab=${key}`}>{label}<i>{key==='teams'?data.listings.length:key==='applications'?data.applications.length+data.incoming.length:key==='watchlist'?data.watchlist.length:''}</i>
+</Link>)}</nav>
+<Link href="/profile">Edit profile →</Link>
+</aside>
+<section className="dashboard-main">{params.published&&<div className="publish-success">✓ Your team is live on the Exchange. <Link href={`/league/${params.published}`}>View listing →</Link>
+</div>}<div className="dash-title">
+<div>
+<span className="kicker">MANAGER DESK</span>
+<h1>{tab==='overview'?`Good morning, ${name}.`:tab==='teams'?'Your posted teams':tab==='applications'?'Submitted applications':'Your watchlist'}</h1>
+<p>{tab==='overview'?"Here's what moved since your last visit.":'Live account data from your Exchange activity.'}</p>
+</div>
+<Link className="primary" href="/list">List a team ↗</Link>
+</div>
+{tab==='overview'&&<>
+<div className="dash-metrics">
+<article>
+<span>POSTED TEAMS</span>
+<b>{data.listings.length}</b>
+<small>{data.listings.reduce((n,x)=>n+x.applications,0)} total applications</small>
+</article>
+<article>
+<span>OPEN APPLICATIONS</span>
+<b>{data.applications.filter(x=>!['accepted','declined'].includes(x.status)).length}</b>
+<small>Track every status</small>
+</article>
+<article>
+<span>WATCHLIST</span>
+<b>{data.watchlist.length}</b>
+<small>Saved franchises</small>
+</article>
+<article>
+<span>PROFILE VIEWS</span>
+<b>{data.profileViews}</b>
+<small>All-time verified views</small>
+</article>
+</div>
+<div className="dash-grid">
+<section>
+<div className="panel-title">
+<h2>Your applications</h2>
+<Link href="/dashboard?tab=applications">View all →</Link>
+</div>
+<Rows items={data.applications.slice(0,3).map(x=>({id:x.id,title:x.title,league:x.league,meta:appStatus(x.status)}))} empty="You haven't applied for a team yet."/>
+</section>
+<section>
+<div className="panel-title">
+<h2>Market watch</h2>
+<Link href="/dashboard?tab=watchlist">View all →</Link>
+</div>{data.watchlist[0]?<div className="watch-card">
+<span className="kicker">WATCHING</span>
+<h3>{data.watchlist[0].title}</h3>
+<p>{data.watchlist[0].league}</p>
+<div>
+<b>${Math.round(data.watchlist[0].price/100)}</b>
+<small>per season</small>
+</div>
+<Link href={`/league/${data.watchlist[0].id}`}>View franchise →</Link>
+</div>:<div className="dash-empty">Save teams from the market to track price changes here.</div>}</section>
+</div>
+</>}
+{tab==='teams'&&<>
+<div className="account-table">
+<div className="account-head">
+<span>TEAM</span>
+<span>STATUS</span>
+<span>APPLICATIONS</span>
+<span>VIEWS</span>
+</div>{data.listings.map(x=>
+<Link href={x.applications?`/dashboard/listings/${x.id}/applications`:`/league/${x.id}`} key={x.id}>
+<span>
+<strong>{x.title}</strong>
+<small>{x.league} · ${Math.round(x.price/100)}</small>
+</span>
+<em>{x.status}</em>
+<b>{x.applications}</b>
+<b>{x.views}</b>
+</Link>)}{!data.listings.length&&<Empty title="No teams posted yet" body="Import a Sleeper league and put your first opening on the market." href="/list" action="Post a team"/>}</div>{data.incoming.length>0&&<section className="incoming-apps">
+<div className="panel-title">
+<h2>Applicant profiles</h2>
+<span>{data.incoming.length} TO REVIEW</span>
+</div>{data.incoming.map(x=>
+<a className="incoming-link" href={`/dashboard/listings/${x.openingId}/applications`} key={x.id}>
+<b className="shield">{x.name.slice(0,2).toUpperCase()}</b>
+<div>
+<strong>{x.name}</strong>
+<small>@{x.handle} · Applied for {x.title}</small>
+<p>{x.bio||'Exchange manager profile'}{x.sleeperUsername&&` · Sleeper: ${x.sleeperUsername}`}</p>{x.message&&<blockquote>“{x.message}”</blockquote>}</div>
+<em>{appStatus(x.status)}</em>
+</a>)}</section>}</>}
+{tab==='applications'&&<>{data.incoming.length>0&&<section className="incoming-apps"><div className="panel-title"><h2>Applications to your listings</h2><span>{data.incoming.length} TO REVIEW</span></div>{data.incoming.map(x=><a className="incoming-link" href={`/dashboard/listings/${x.openingId}/applications`} key={x.id}><b className="shield">{x.name.slice(0,2).toUpperCase()}</b><div><strong>{x.name}</strong><small>@{x.handle} · {x.title}</small>{x.message&&<p>Note: {x.message}</p>}</div><em>{appStatus(x.status)} →</em></a>)}</section>}<div className="account-table">
+<div className="account-head">
+<span>TEAM</span>
+<span>STATUS</span>
+<span>UPDATED</span>
+<span>ACTION</span>
+</div>{data.applications.map(x=>
+<Link href={`/league/${x.openingId}`} key={x.id}>
+<span>
+<strong>{x.title}</strong>
+<small>{x.league}</small>
+</span>
+<em>{appStatus(x.status)}</em>
+<b>{new Date(x.updated).toLocaleDateString()}</b>{['accepted','declined'].includes(x.status)?<b>—</b>:<WithdrawButton id={x.id}/>}</Link>)}{!data.applications.length&&<Empty title="No applications submitted" body="Explore the market and apply when you find the right league." href="/marketplace" action="Browse teams"/>}</div></>}
+{tab==='watchlist'&&<div className="account-table">
+<div className="account-head">
+<span>TEAM</span>
+<span>PRICE</span>
+<span>CHANGE</span>
+<span>STATUS</span>
+</div>{data.watchlist.map(x=>
+<Link href={`/league/${x.id}`} key={x.id}>
+<span>
+<strong>{x.title}</strong>
+<small>{x.league}</small>
+</span>
+<b>${Math.round(x.price/100)}</b>
+<em>{x.previousPrice&&x.previousPrice>x.price?`↓ $${Math.round((x.previousPrice-x.price)/100)}`:'No change'}</em>
+<b>{x.status}</b>
+</Link>)}{!data.watchlist.length&&<Empty title="Your watchlist is empty" body="Save interesting franchises to monitor price drops and availability." href="/marketplace" action="Open the market"/>}</div>}
+</section>
+</div>
+</main>}
+function Rows({items,empty}:{items:Array<{id:string;title:string;league:string;meta:string}>;empty:string}){return <div className="application-list">{items.map(x=>
+<article key={x.id}>
+<span className="shield">{x.title.slice(0,2)}</span>
+<span>
+<strong>{x.title}</strong>
+<small>{x.league}</small>
+</span>
+<em>{x.meta}</em>
+</article>)}{!items.length&&<div className="dash-empty">{empty}</div>}</div>}
+function Empty({title,body,href,action}:{title:string;body:string;href:string;action:string}){return <div className="account-empty">
+<b>{title}</b>
+<p>{body}</p>
+<Link href={href}>{action} →</Link>
+</div>}
 function Link({href,...props}:AnchorHTMLAttributes<HTMLAnchorElement>&{href:string}){return <a href={href} {...props}/>}
